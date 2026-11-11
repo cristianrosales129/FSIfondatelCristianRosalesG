@@ -1,0 +1,405 @@
+
+import javax.swing.JOptionPane;
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+
+/**
+ *
+ * @author ultra
+ */
+    /**
+ *
+ * @author ultra
+ */
+public class FAdministrador extends javax.swing.JFrame {
+ Conexion cnx = new Conexion();
+    int idSeleccionado = -1;   // -1 = ningún usuario seleccionado
+    
+    public FAdministrador() {
+        initComponents();
+        setSize(825,600);
+        setLocationRelativeTo(null);
+        
+        if (cnx.conectar("localhost", "fondatel", "root", "") == 0) {
+            JOptionPane.showMessageDialog(this, "Sin conexión. La ventana se cerrará...");
+            System.exit(0);
+        }
+        
+        // Eventos conectados a mano (así no hay que tocar el .form)
+       
+        BBuscar.addActionListener(e -> cargarTabla(jTextField1.getText().trim()));
+        jTextField1.addActionListener(e -> cargarTabla(jTextField1.getText().trim()));
+        
+        TUsuarios.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        TUsuarios.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                cargarSeleccion();
+            }
+        });
+        
+        cargarTabla("");
+    }
+    
+    // Para mostrar quién entró en la etiqueta "Usuario:" del encabezado
+    public FAdministrador(String usuario) {
+        this();
+        LUsuario.setText("Usuario: " + usuario);
+    }
+    
+    // Llena la tabla (filtro vacío = todos los usuarios)
+    private void cargarTabla(String filtro) {
+        TUsuarios.setModel(Administrador.consultar(cnx.con, filtro));
+    }
+    
+    // Pasa la fila seleccionada a los campos del formulario
+    private void cargarSeleccion() {
+        int fila = TUsuarios.getSelectedRow();
+        if (fila < 0) {
+            return;
+        }
+        
+        idSeleccionado = Integer.parseInt(TUsuarios.getValueAt(fila, 0).toString());
+        TNombre.setText(TUsuarios.getValueAt(fila, 1).toString());
+        TUsuario.setText(TUsuarios.getValueAt(fila, 2).toString());
+        CBRol.setSelectedItem(TUsuarios.getValueAt(fila, 3).toString());
+        CBEstado.setSelectedItem(TUsuarios.getValueAt(fila, 4).toString());
+        TClave.setText("");   // el nip no se muestra; vacío = no cambiarlo
+    }
+    
+    private void limpiar() {
+        idSeleccionado = -1;
+        TNombre.setText("");
+        TUsuario.setText("");
+        TClave.setText("");
+        CBRol.setSelectedIndex(0);
+        CBEstado.setSelectedIndex(0);
+        TUsuarios.clearSelection();
+    }
+    
+    // Arma un Administrador con lo que hay en el formulario (null si faltan datos)
+    private Administrador leerFormulario(int id, boolean claveObligatoria) {
+        String nombre = TNombre.getText().trim();
+        String usuario = TUsuario.getText().trim();
+        String clave = TClave.getText().trim();
+        
+        if (nombre.isEmpty() || usuario.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Captura al menos el nombre y el usuario.");
+            return null;
+        }
+        if (claveObligatoria && clave.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Captura la contraseña del nuevo usuario.");
+            return null;
+        }
+        
+        return new Administrador(
+                id,
+                nombre,
+                usuario,
+                clave,
+                CBRol.getSelectedItem().toString(),
+                CBEstado.getSelectedItem().toString()
+        );
+    }
+    
+    // Botón REGISTRAR
+    private void registrar() {
+        Administrador adm = leerFormulario(0, true);
+        if (adm == null) return;
+        
+        if (adm.insertar(cnx.con) == 1) {
+            JOptionPane.showMessageDialog(this, "Usuario registrado.");
+            limpiar();
+            cargarTabla("");
+        } else {
+            JOptionPane.showMessageDialog(this, "No se pudo realizar el registro.\n" + adm.error);
+        }
+    }
+    
+    // Botón MODIFICAR
+    private void modificar() {
+        if (idSeleccionado < 0) {
+            JOptionPane.showMessageDialog(this, "Selecciona un usuario de la tabla.");
+            return;
+        }
+        
+        Administrador adm = leerFormulario(idSeleccionado, false);
+        if (adm == null) return;
+        
+        if (adm.actualizar(cnx.con) == 1) {
+            JOptionPane.showMessageDialog(this, "Usuario actualizado.");
+            limpiar();
+            cargarTabla("");
+        } else {
+            JOptionPane.showMessageDialog(this, "No se pudo realizar la actualización.\n" + adm.error);
+        }
+    }
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jButton1 = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        TUsuarios = new javax.swing.JTable();
+        TNombre = new javax.swing.JTextField();
+        TClave = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        LUsuario = new javax.swing.JLabel();
+        TUsuario = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        CBEstado = new javax.swing.JComboBox();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jToolBar1 = new javax.swing.JToolBar();
+        BRegistrar = new javax.swing.JButton();
+        BModificar = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        jTextField1 = new javax.swing.JTextField();
+        BBuscar = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
+        BMediciones = new javax.swing.JButton();
+        CBRol = new javax.swing.JComboBox();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        getContentPane().setLayout(null);
+
+        jButton1.setText("Ir, ventanaAlimentos");
+        jButton1.addActionListener(this::jButton1ActionPerformed);
+        getContentPane().add(jButton1);
+        jButton1.setBounds(670, 440, 143, 90);
+
+        TUsuarios.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(TUsuarios);
+
+        getContentPane().add(jScrollPane1);
+        jScrollPane1.setBounds(20, 310, 644, 219);
+        getContentPane().add(TNombre);
+        TNombre.setBounds(110, 189, 241, 26);
+        getContentPane().add(TClave);
+        TClave.setBounds(520, 230, 131, 26);
+
+        jLabel5.setText("Usuario:");
+        getContentPane().add(jLabel5);
+        jLabel5.setBounds(46, 232, 42, 16);
+
+        jPanel1.setBackground(new java.awt.Color(0, 51, 102));
+
+        jLabel1.setFont(new java.awt.Font("Comic Sans MS", 0, 24)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 204));
+        jLabel1.setText("Ventana del Administrador");
+
+        jLabel8.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel8.setText("Administración de Usuarios");
+
+        LUsuario.setForeground(new java.awt.Color(255, 255, 255));
+        LUsuario.setText("Usuario:");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(25, 25, 25)
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel8))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 261, Short.MAX_VALUE)
+                .addComponent(LUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(22, 22, 22))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel8)))
+                .addContainerGap(12, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(LUsuario)
+                .addGap(21, 21, 21))
+        );
+
+        getContentPane().add(jPanel1);
+        jPanel1.setBounds(6, 6, 809, 84);
+        getContentPane().add(TUsuario);
+        TUsuario.setBounds(110, 227, 172, 26);
+
+        jLabel7.setText("Estado:");
+        getContentPane().add(jLabel7);
+        jLabel7.setBounds(46, 276, 38, 16);
+
+        jLabel2.setText("Rol:");
+        getContentPane().add(jLabel2);
+        jLabel2.setBounds(470, 200, 20, 16);
+
+        CBEstado.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Activo", "Inactivo" }));
+        getContentPane().add(CBEstado);
+        CBEstado.setBounds(110, 271, 172, 26);
+
+        jLabel3.setText("Contraseña:");
+        getContentPane().add(jLabel3);
+        jLabel3.setBounds(440, 240, 63, 16);
+
+        jLabel4.setText("Nombre:");
+        getContentPane().add(jLabel4);
+        jLabel4.setBounds(46, 194, 46, 16);
+
+        jToolBar1.setRollover(true);
+
+        BRegistrar.setText("REGISTRAR");
+        BRegistrar.setFocusable(false);
+        BRegistrar.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        BRegistrar.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        BRegistrar.addActionListener(this::BRegistrarActionPerformed);
+        jToolBar1.add(BRegistrar);
+
+        BModificar.setText("MODIFICAR");
+        BModificar.setFocusable(false);
+        BModificar.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        BModificar.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        BModificar.addActionListener(this::BModificarActionPerformed);
+        jToolBar1.add(BModificar);
+        jToolBar1.add(jSeparator1);
+
+        jTextField1.setMaximumSize(new java.awt.Dimension(250, 60));
+        jTextField1.setMinimumSize(new java.awt.Dimension(250, 60));
+        jTextField1.setName(""); // NOI18N
+        jTextField1.setPreferredSize(new java.awt.Dimension(250, 60));
+        jToolBar1.add(jTextField1);
+
+        BBuscar.setText("BUSCAR");
+        BBuscar.setFocusable(false);
+        BBuscar.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        BBuscar.setMaximumSize(new java.awt.Dimension(73, 60));
+        BBuscar.setMinimumSize(new java.awt.Dimension(73, 60));
+        BBuscar.setPreferredSize(new java.awt.Dimension(73, 60));
+        BBuscar.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        BBuscar.addActionListener(this::BBuscarActionPerformed);
+        jToolBar1.add(BBuscar);
+        jToolBar1.add(jSeparator2);
+
+        BMediciones.setText("Mediciones");
+        BMediciones.setFocusable(false);
+        BMediciones.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        BMediciones.setMaximumSize(new java.awt.Dimension(73, 60));
+        BMediciones.setMinimumSize(new java.awt.Dimension(73, 60));
+        BMediciones.setPreferredSize(new java.awt.Dimension(73, 60));
+        BMediciones.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(BMediciones);
+
+        getContentPane().add(jToolBar1);
+        jToolBar1.setBounds(6, 96, 809, 69);
+
+        CBRol.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Administrador", "Visitante" }));
+        getContentPane().add(CBRol);
+        CBRol.setBounds(520, 190, 121, 26);
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void BRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BRegistrarActionPerformed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_BRegistrarActionPerformed
+
+    private void BModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BModificarActionPerformed
+        // TODO add your handling code here:
+      
+    }//GEN-LAST:event_BModificarActionPerformed
+
+    private void BBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BBuscarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_BBuscarActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+    FAlimento ventanaAlimento = new FAlimento();
+    ventanaAlimento.setVisible(true);
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> new FAdministrador().setVisible(true));
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton BBuscar;
+    private javax.swing.JButton BMediciones;
+    private javax.swing.JButton BModificar;
+    private javax.swing.JButton BRegistrar;
+    private javax.swing.JComboBox CBEstado;
+    private javax.swing.JComboBox CBRol;
+    private javax.swing.JLabel LUsuario;
+    private javax.swing.JTextField TClave;
+    private javax.swing.JTextField TNombre;
+    private javax.swing.JTextField TUsuario;
+    private javax.swing.JTable TUsuarios;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JToolBar jToolBar1;
+    // End of variables declaration//GEN-END:variables
+}
