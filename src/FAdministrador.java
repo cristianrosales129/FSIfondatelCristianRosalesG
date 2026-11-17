@@ -24,7 +24,7 @@ public class FAdministrador extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         
         if (cnx.conectar("localhost", "fondatel", "root", "") == 0) {
-            JOptionPane.showMessageDialog(this, "Sin conexión. La ventana se cerrará...");
+            JOptionPane.showMessageDialog(this, "Sin conexion");
             System.exit(0);
         }
         
@@ -94,7 +94,7 @@ public class FAdministrador extends javax.swing.JFrame {
             return null;
         }
         
-        return new Administrador(
+                return new Administrador(
                 id,
                 nombre,
                 usuario,
