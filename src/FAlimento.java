@@ -27,6 +27,14 @@ public class FAlimento extends javax.swing.JFrame {
      */
   public FAlimento() {
     initComponents();
+    setDefaultCloseOperation(DISPOSE_ON_CLOSE); // cierra solo esta ventana, no toda la aplicación
+    BtnNueva.addActionListener(e -> {           // limpia el formulario para capturar otro alimento
+        TClave.setText("");
+        TTitulo.setText("");
+        cartel = null;
+        JTCartel.setIcon(null);
+        TConsultas.clearSelection();
+    });
     setSize(700, 800);
     setLocationRelativeTo(null);
     //setIconImage(icono.getImage());
@@ -177,35 +185,83 @@ public class FAlimento extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnRegistrarActionPerformed
-                                          
-    String cla = TClave.getText().trim();
-    String nombre = TTitulo.getText().trim();
+        String cla = TClave.getText().trim();
+        String nombre = TTitulo.getText().trim();
 
-    if (cla.isEmpty() || nombre.isEmpty() || cartel == null) {
-        JOptionPane.showMessageDialog(this, "Completa la clave, el nombre y selecciona una fotografía");
-        return;
-    }
-
-    try {
-        int id = Integer.parseInt(cla);
-        
-        // Creamos el objeto Alimento igual que Peliculas
-        Alimento alimento = new Alimento(id, nombre, "Sin descripción", 0.0f, cartel, "General", "disponible");
-
-        if (alimento.insertar(cnx) == 1) {
-        cargarAlimentos();
-            JOptionPane.showMessageDialog(this, "¡Alimento registrado correctamente!");
-        } else {
-            JOptionPane.showMessageDialog(this, "No se pudo registrar el alimento");
+        if (cla.isEmpty() || nombre.isEmpty() || cartel == null) {
+            JOptionPane.showMessageDialog(this, "Completa la clave, el nombre y selecciona una fotografía");
+            return;
         }
 
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(this, "La clave debe ser un número entero");
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error al registrar: " + e.getMessage());
-    }
+        int id;
+        try {
+            id = Integer.parseInt(cla);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "La clave debe ser un número entero");
+            return;
+        }
 
-  
+        // Si la clave ya existe se ACTUALIZA (p. ej. para ponerle foto); si no, se REGISTRA
+        boolean existe = "1".equals(cnx.obtenerDato("SELECT COUNT(*) FROM alimentos WHERE idalimentos = " + id));
+
+        String desc = "", precio = "", cat = "entrada", est = "disponible";
+        if (existe) {
+            desc   = cnx.obtenerDato("SELECT descripcion FROM alimentos WHERE idalimentos = " + id);
+            precio = cnx.obtenerDato("SELECT precio FROM alimentos WHERE idalimentos = " + id);
+            cat    = cnx.obtenerDato("SELECT categoria FROM alimentos WHERE idalimentos = " + id);
+            est    = cnx.obtenerDato("SELECT estado FROM alimentos WHERE idalimentos = " + id);
+        }
+
+        javax.swing.JTextField tDesc = new javax.swing.JTextField(desc, 25);
+        javax.swing.JTextField tPrecio = new javax.swing.JTextField(precio, 8);
+        javax.swing.JComboBox<String> cCat = new javax.swing.JComboBox<>(
+                new String[]{"entrada", "plato principal", "postre", "bebida"});
+        javax.swing.JComboBox<String> cEst = new javax.swing.JComboBox<>(
+                new String[]{"disponible", "agotado"});
+        cCat.setSelectedItem(cat);
+        cEst.setSelectedItem(est);
+
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.GridLayout(0, 2, 6, 6));
+        panel.add(new javax.swing.JLabel("Descripción:"));
+        panel.add(tDesc);
+        panel.add(new javax.swing.JLabel("Precio:"));
+        panel.add(tPrecio);
+        panel.add(new javax.swing.JLabel("Categoría:"));
+        panel.add(cCat);
+        panel.add(new javax.swing.JLabel("Estado:"));
+        panel.add(cEst);
+
+        int op = JOptionPane.showConfirmDialog(this, panel,
+                (existe ? "Actualizar" : "Registrar") + " alimento " + id,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (op != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        float prc;
+        try {
+            prc = Float.parseFloat(tPrecio.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "El precio debe ser un número");
+            return;
+        }
+        if (prc <= 0 || tDesc.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Escribe la descripción y un precio mayor a cero");
+            return;
+        }
+
+        Alimento alimento = new Alimento(id, nombre, tDesc.getText().trim(), prc,
+                reducir(cartel, 600), (String) cCat.getSelectedItem(), (String) cEst.getSelectedItem());
+
+        int r = existe ? alimento.actualizar(cnx) : alimento.insertar(cnx);
+        if (r == 1) {
+            cargarAlimentos();
+            JOptionPane.showMessageDialog(this, existe
+                    ? "¡Alimento actualizado correctamente!"
+                    : "¡Alimento registrado correctamente!");
+        } else {
+            JOptionPane.showMessageDialog(this, "No se pudo guardar el alimento");
+        }
     }//GEN-LAST:event_BtnRegistrarActionPerformed
 
     private void TConsultasMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TConsultasMousePressed
@@ -257,6 +313,16 @@ public class FAlimento extends javax.swing.JFrame {
             ));
         }
     }//GEN-LAST:event_BtnAbrirCartelActionPerformed
+
+    // Reduce la foto (máx. "max" píxeles por lado) para que la base de datos no crezca de más
+    private ImageIcon reducir(ImageIcon ic, int max) {
+        int w = ic.getIconWidth(), h = ic.getIconHeight();
+        if (w <= max && h <= max) {
+            return ic;
+        }
+        double f = (double) max / Math.max(w, h);
+        return new ImageIcon(Conexion.escalarImagen(ic.getImage(), (int) (w * f), (int) (h * f)));
+    }
 
     /**
      * @param args the command line arguments

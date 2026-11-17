@@ -35,6 +35,20 @@ private final String rol = "SELECT puesto FROM empleados "
             "No se pudo conectar con la base de datos"
         );
     }
+
+    // El cliente no tiene usuario: consulta el menú desde la barra de menú
+    javax.swing.JMenuBar barra = new javax.swing.JMenuBar();
+    javax.swing.JMenu mnuCliente = new javax.swing.JMenu("Cliente");
+    javax.swing.JMenuItem itmMenu = new javax.swing.JMenuItem("Ver menú del restaurante");
+    itmMenu.addActionListener(e -> {
+        Fmenu fm = new Fmenu();
+        fm.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        fm.setVisible(true);
+    });
+    mnuCliente.add(itmMenu);
+    barra.add(mnuCliente);
+    setJMenuBar(barra);
+    pack();
     }
 
     /**
@@ -156,6 +170,20 @@ private final String rol = "SELECT puesto FROM empleados "
             fm.setVisible(true);
             break;
 
+        case "cocinero":
+            FCocinero fc = new FCocinero(usr);
+            cnx.desconectar();
+            this.dispose();
+            fc.setVisible(true);
+            break;
+
+        case "cajero":
+            FCajero fj = new FCajero(usr);
+            cnx.desconectar();
+            this.dispose();
+            fj.setVisible(true);
+            break;
+
         case "":
             intentos++;
             JOptionPane.showMessageDialog(this, "Credenciales incorrectas");
@@ -167,7 +195,7 @@ private final String rol = "SELECT puesto FROM empleados "
             }
             break;
 
-        default: // cocinero, cajero
+        default: // puestos sin ventana asignada
             JOptionPane.showMessageDialog(this, "Tu puesto no tiene acceso al sistema");
             break;
     }
